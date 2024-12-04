@@ -21,14 +21,19 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Clean and install dependencies
+        run: |
+          rm -rf node_modules
+          npm install
 
       - name: Run linter
         run: npx eslint . || echo "Linting warnings/errors detected."
 
+      - name: Fix Jest permissions
+        run: chmod +x ./node_modules/.bin/jest
+      
       - name: Run tests
-        run: npm test
+        run: npx jest
 
   deploy:
     needs: build
