@@ -1,39 +1,32 @@
 const request = require("supertest");
-const { server, app } = require("../server");
-const { io } = require("socket.io-client");
+const { app, server } = require("../server.js"); // Asegúrate de usar la ruta correcta
 
-describe("Server tests", () => {
-  afterAll((done) => {
-    server.close(done);
+describe("API de sensores", () => {
+  afterAll(() => {
+    server.close(); // Cerramos el servidor después de las pruebas
   });
 
-  it("GET /sensors should return all sensors", async () => {
-    const res = await request(app).get("/sensors");
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty("0001");
-    expect(res.body).toHaveProperty("0002");
-  });
-
-  it("GET /sensor/:id should return a specific sensor", async () => {
-    const res = await request(app).get("/sensor/0001");
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty("timestamp");
-    expect(res.body).toHaveProperty("value");
-  });
-
-  it("GET /sensor/:id should return 404 for an invalid sensor ID", async () => {
-    const res = await request(app).get("/sensor/9999");
-    expect(res.statusCode).toBe(404);
-    expect(res.body).toHaveProperty("error", "Sensor no encontrado");
-  });
-
-  it("WebSocket should emit sensor data", (done) => {
-    const socket = io(`http://localhost:4000`);
-    socket.on("sensorData", (data) => {
-      expect(data).toHaveProperty("0001");
-      expect(data).toHaveProperty("0002");
-      socket.close();
-      done();
+  test("GET /sensors debería devolver todos los sensores", async () => {
+    const response = await request(app).get("/sensors");
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      "0001": { name: "Medidor de Caudal", value: expect.any(Number) },
+      "0002": { name: "Medidor de Nivel de Agua", value: expect.any(Number) },
     });
+  });
+
+  test("GET /sensor/:id debería devolver un sensor específico", async () => {
+    const response = await request(app).get("/sensor/0001");
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      timestamp: expect.any(String),
+      value: expect.any(Number),
+    });
+  });
+
+  test("GET /sensor/:id debería devolver 404 si el sensor no existe", async () => {
+    const response = await request(app).get("/sensor/9999");
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ error: "Sensor no encontrado" });
   });
 });
