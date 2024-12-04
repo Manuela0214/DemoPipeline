@@ -34,12 +34,12 @@ app.get("/sensor/:id", (req, res) => {
   }
 });
 
-setInterval(() => {
+
   sensors["0001"].value = parseFloat((Math.random() * 100).toFixed(2)); // caudal
   sensors["0002"].value = parseFloat((Math.random() * 50).toFixed(2)); // nivel de agua
 
   io.emit("sensorData", sensors);
-}, 2000);
+
 
 io.on("connection", (socket) => {
   console.log("Cliente conectado");
